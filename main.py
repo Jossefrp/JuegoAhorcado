@@ -1,4 +1,4 @@
-from clases import Imagenes, Boton
+from clases import Imagenes, Boton, Palabras, Ahorcado
 import pygame
 import sys
 
@@ -53,21 +53,22 @@ def pantalla_bienvenida(screen):
     return True
 
 
-def pantalla_juego(screen):
+def pantalla_juego(screen, juego: Ahorcado.Ahorcado):
     img = Imagenes.img_redimensionada(
         "./img/Fondos/Juego.png", SIZE_SCREEN)
 
     screen.blit(img, (0, 0))
-    pygame.display.update()
-
+    juego.update(screen, 30, 510)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
             sys.exit()
 
-        elif event.type == pygame.KEYDOWN:
-            return False
-
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            pos = pygame.mouse.get_pos()
+            a = juego.accion_car(pos)
+            if a:
+                return juego.verificar(a)
     return True
 
 
@@ -77,7 +78,12 @@ def main():
     pygame.display.set_caption("Juego del ahorcado")
 
     bienvenida = True
-    juego = True
+    flag_juego = True
+
+    # Palabra
+    juego = Ahorcado.Ahorcado("./db/words.json", "./img/Letras")
+    juego.iniciar()
+
     while True:
 
         # Pantalla bienvenida
@@ -85,9 +91,11 @@ def main():
             bienvenida = pantalla_bienvenida(screen)
 
         # Pantalla juego
-        while juego:
-            juego = pantalla_juego(screen)
+        while flag_juego:
+            flag_juego = pantalla_juego(screen, juego)
+            pygame.display.update()
 
+        screen.fill((0, 0, 0))
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
