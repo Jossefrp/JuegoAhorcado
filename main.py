@@ -1,9 +1,11 @@
 from clases import Imagenes, Boton, Palabras, Ahorcado
 import pygame
 import sys
+import time
 
 
 SIZE_SCREEN = (1000, 600)
+FPS = 60
 
 
 def pantalla_bienvenida(screen):
@@ -58,7 +60,9 @@ def pantalla_juego(screen, juego: Ahorcado.Ahorcado):
         "./img/Fondos/Juego.png", SIZE_SCREEN)
 
     screen.blit(img, (0, 0))
-    juego.update(screen, 30, 510)
+    display_texto(screen, f"Tema: {juego.palabra.tema}", (255, 255, 255), 30, (850, 570))
+    juego.update(screen, 30, 510, pygame.mouse.get_pos())
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
@@ -66,10 +70,33 @@ def pantalla_juego(screen, juego: Ahorcado.Ahorcado):
 
         elif event.type == pygame.MOUSEBUTTONDOWN:
             pos = pygame.mouse.get_pos()
-            a = juego.accion_car(pos)
+            a = juego.accion_imagen(pos)
             if a:
                 return juego.verificar(a)
     return True
+
+
+def display_texto(screen, cadena, color, size_text, pos):
+    fuente = pygame.font.SysFont("CaskaydiaCove Nerd Font Mono", size_text)
+    texto = fuente.render(cadena, True, color)
+    pos_text = texto.get_rect()
+    pos_text.centerx = pos[0]
+    pos_text.centery = pos[1]
+    screen.blit(texto, pos_text)
+
+
+def win(screen, palabra):
+    img_win = Imagenes.img_redimensionada("./img/Fondos/win.png", SIZE_SCREEN)
+    screen.blit(img_win, (0, 0))
+    display_texto(screen, "La palabra es: ", (255, 255, 255), 30, (SIZE_SCREEN[0]/2, 20))
+    display_texto(screen, palabra, (89, 250, 40), 60, (SIZE_SCREEN[0] / 2, 70))
+
+
+def lose(screen, palabra):
+    img_win = Imagenes.img_redimensionada("./img/Fondos/lose.png", SIZE_SCREEN)
+    screen.blit(img_win, (0, 0))
+    display_texto(screen, "La palabra es: ", (255, 255, 255), 30, (SIZE_SCREEN[0]/2, 30))
+    display_texto(screen, palabra, (245, 29, 29), 70, (SIZE_SCREEN[0] / 2, 90))
 
 
 def main():
@@ -79,6 +106,9 @@ def main():
 
     bienvenida = True
     flag_juego = True
+
+    # Clock
+    clock = pygame.time.Clock()
 
     # Palabra
     juego = Ahorcado.Ahorcado("./db/words.json", "./img/Letras")
@@ -95,12 +125,19 @@ def main():
             flag_juego = pantalla_juego(screen, juego)
             pygame.display.update()
 
-        screen.fill((0, 0, 0))
+        if juego.resultado:
+            # screen.fill((255, 255, 255))
+            win(screen, juego.palabra.palabra)
+        else:
+            lose(screen, juego.palabra.palabra)
+            # screen.fill((0, 0, 0))
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
         pygame.display.update()
+        clock.tick(FPS)
 
 
 if __name__ == "__main__":
