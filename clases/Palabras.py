@@ -8,7 +8,7 @@ class Palabra():
     def __init__(self, db):
         self.palabra = ""
         self.tema = ""
-        with open(db) as file:
+        with open(db, encoding="UTF-8") as file:
             self.data: dict = json.loads(file.read())
 
     def palabra_aleatoria(self):
