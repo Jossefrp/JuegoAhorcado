@@ -1,7 +1,6 @@
-from clases import Imagenes, Boton, Palabras, Ahorcado
+from clases import Imagenes, Boton, Ahorcado, Sonido
 import pygame
 import sys
-import time
 
 
 SIZE_SCREEN = (1000, 600)
@@ -42,6 +41,7 @@ def pantalla_bienvenida(screen):
     # Movimiento titulo
     titulo.animacion(screen, pygame.mouse.get_pos())
 
+    Sonido.imagen_son(screen)
     pygame.display.update()
 
     for event in pygame.event.get():
@@ -60,8 +60,11 @@ def pantalla_juego(screen, juego: Ahorcado.Ahorcado):
         "./img/Fondos/Juego.png", SIZE_SCREEN)
 
     screen.blit(img, (0, 0))
-    display_texto(screen, f"Tema: {juego.palabra.tema}", (255, 255, 255), 30, (850, 570))
+    display_texto(screen, f"Tema: {juego.palabra.tema}",
+                  (255, 255, 255), 30, (850, 570))
+
     juego.update(screen, 30, 510, pygame.mouse.get_pos())
+    Sonido.imagen_son(screen)
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -88,14 +91,16 @@ def display_texto(screen, cadena, color, size_text, pos):
 def win(screen, palabra):
     img_win = Imagenes.img_redimensionada("./img/Fondos/win.png", SIZE_SCREEN)
     screen.blit(img_win, (0, 0))
-    display_texto(screen, "La palabra es: ", (255, 255, 255), 30, (SIZE_SCREEN[0]/2, 20))
+    display_texto(screen, "La palabra es: ", (255, 255, 255),
+                  30, (SIZE_SCREEN[0]/2, 20))
     display_texto(screen, palabra, (89, 250, 40), 60, (SIZE_SCREEN[0] / 2, 70))
 
 
 def lose(screen, palabra):
     img_win = Imagenes.img_redimensionada("./img/Fondos/lose.png", SIZE_SCREEN)
     screen.blit(img_win, (0, 0))
-    display_texto(screen, "La palabra es: ", (255, 255, 255), 30, (SIZE_SCREEN[0]/2, 30))
+    display_texto(screen, "La palabra es: ", (255, 255, 255),
+                  30, (SIZE_SCREEN[0]/2, 30))
     display_texto(screen, palabra, (245, 29, 29), 70, (SIZE_SCREEN[0] / 2, 90))
 
 
@@ -103,6 +108,7 @@ def main():
     pygame.init()
     screen = pygame.display.set_mode(SIZE_SCREEN)
     pygame.display.set_caption("Juego del ahorcado")
+    Sonido.play_sound()
 
     bienvenida = True
     flag_juego = True
@@ -114,6 +120,7 @@ def main():
     juego = Ahorcado.Ahorcado("./db/words.json", "./img/Letras")
     juego.iniciar()
 
+    verifica = 0
     while True:
 
         # Pantalla bienvenida
@@ -128,9 +135,14 @@ def main():
         if juego.resultado:
             # screen.fill((255, 255, 255))
             win(screen, juego.palabra.palabra)
+            while verifica == 0:
+                Sonido.win_sound()
+                verifica = 1
         else:
             lose(screen, juego.palabra.palabra)
-            # screen.fill((0, 0, 0))
+            while verifica == 0:
+                Sonido.loser_sound()
+                verifica = 1
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
